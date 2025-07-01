@@ -10,7 +10,7 @@ var window = {
 
 var introVar = {
 	cubeRotate: 0,
-	tankY: 300,
+	tankY: 800,
 	tankRotate: 0,
 	turretRotate: 0,
 	bulletX: 454,
@@ -18,7 +18,6 @@ var introVar = {
 	bulletTransparency: 0,
 	soundTransparency: 0,
 }
-
 var pulse = {
 	var: 200,
 	rate: 5,
@@ -31,24 +30,47 @@ var fade = {
 
 var cube;
 
+var commsHeight;
+var commsWidth;
+var center = {
+    x: 0,
+    y: 0
+};
+var scaleResolution;
+var translateCenter = {
+    x: 0,
+    y: 0
+};
+
 //Dev resolutions, windowHeight = ~959, windowWidth= ~1800
 function windowResized() {
-	window.currentWidth = Math.floor(windowHeight * (16/9));
-	window.beforeResWidth = window.currentWidth;
-	window.beforeResHeight = windowHeight;
-	//resizeCanvas(1366, 768);
-	resizeCanvas(window.currentWidth, windowHeight);
-	window.chromebookToCurrentScale = window.currentWidth/1792;
-	//window.chromebookToCurrentScale = 768/959;
+	//Keep a consistent aspect ratio of 16:9, aWindowWidth is the actual width of the canvas
+	aWindowWidth = Math.floor(windowHeight * (16/9));
+
+	//Center constants
+	center.x = aWindowWidth/2;
+	center.y = windowHeight/2;
+
+	//Half of the difference of the Chromebook res to native, in order to port over Chromebook-screen designed code
+	translateCenter.x = Math.abs((aWindowWidth - 1366))/4;
+	translateCenter.y = Math.abs((windowHeight - 768))/4;
+	scaleResolution = windowHeight/853;
+
+	//"Communications" text coords
+	commsHeight = center.y + ((center.y)/2);
+	commsWidth = center.x;
+
+	resizeCanvas(aWindowWidth, windowHeight);
 }
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
-    windowResized();
 	var canvas = document.querySelector("canvas");
 	canvas.style.margin = 'auto';
 	document.getElementById("script-holder").appendChild(canvas);
+    windowResized();
 	rectMode(CENTER);
+	textAlign(CENTER, CENTER);
 	angleMode(DEGREES);
 	textStyle(BOLD);
     ellipseMode(CENTER);
@@ -72,13 +94,7 @@ function pulseMath() {
 	if(pulse.var>225){pulse.rate = 1;}
 }
 
-function debug() {
-	fill(255, 0, 0);
-	textSize(25);
-	text(window.chromebookToCurrentScale, mouseX + 40, mouseY + 5)
-	text(windowHeight, mouseX + 40, mouseY + 35)
-}
-
+/*
 function intro() {
 	//clear();
     pulseMath();
@@ -188,10 +204,123 @@ function intro() {
 		fade.intro = 255;
 		stage = 2;
 	}
+} */
+
+function intro() {
+	introVar.cubeRotate += 5;
+	if (introVar.tankY > 682.5) {
+		introVar.tankY -= 1.25;
+	}
+	if ((introVar.tankY == 682.5) && (introVar.tankRotate < 25)) {
+		introVar.tankRotate += 1;
+		introVar.turretRotate = introVar.tankRotate;
+	}
+	if (introVar.tankRotate == 25 && introVar.turretRotate < 90) {
+		introVar.turretRotate += 1;
+	}
+	if (introVar.turretRotate == 90) {
+		if (introVar.bulletX <= 1525) {
+			introVar.bulletX += 8;
+		}
+		if ((introVar.bulletX >= 497)) {
+			introVar.bulletTransparency = 255;
+			introVar.soundTransparency = 50;
+		}
+	}
+	if ((introVar.bulletX >= 536)) {
+		introVar.textCover += 8;
+	}
+	if ((introVar.bulletX >= 1525) && (fade.out < 255)) {
+		fade.out += 2.5;
+	}
+	
+	background(0);
+	push();
+	translate(translateCenter.x, translateCenter.y);
+	scale(scaleResolution);
+	//Logo texts
+	fill(255, 255, 255);
+	textSize(725);
+	text("DP", 625, 347.5);
+	textSize(75);
+	text("roductions", 1010, 550.5);
+	//Cube
+	push();
+	translate(150, 675);
+	rotate(introVar.cubeRotate);
+	fill(-pulse.var, pulse.var, pulse.var + 100);
+	rect(0, 0, 125, 125, 15);
+	pop();
+	textSize(75);
+	text("X", 150, 680);
+
+	//Tank & turret
+	push();
+	translate(400, introVar.tankY);
+	fill(50, 0, 0);
+	push();
+	scale(3);
+	rect(-12,0,5,35,5);
+	rect(12,0,5,35,5);
+	fill(0, 120, 0);
+	rect(0,0,20,40,5);
+	pop();
+	pop();
+	push();
+	translate(400, introVar.tankY);
+	rotate(introVar.turretRotate);
+	fill(0, 100, 0);
+	push();
+	scale(3);
+	rect(0,0,15,15,5);
+	rect(0,-20,5,25,0);
+	pop();
+	pop();
+	//...and more text & bullet
+	textSize(125);
+	text("...and more", 900, 700);
+	rectMode(CORNER);
+	fill(0);
+	rect(570, 625, introVar.textCover, 122);
+	push();
+	translate(introVar.bulletX, 662.5);
+	fill(100, 100, 100, introVar.soundTransparency);
+	triangle(-7.5, 45, 40, 17.5, -7.5, -9);
+	fill(158, 60, 14, introVar.bulletTransparency);
+	triangle(2, 27.5, 45, 17.5, 2, 10);
+	pop();
+	rectMode(CENTER);
+	pop();
+	
+	fadeOut();
+
+	fill(0, 0, 0, fade.out);
+	rect(center.x, center.y, aWindowWidth, windowHeight);
+	
+	if (fade.out >= 255) {
+		fade.intro = 255;
+		stage = 2;
+	}
+}
+
+function fadeOut() {
+	// Fade in the screen, or moreso fade out of the previous screen
+	if (fade.intro > 0) {
+		fill(0, 0, 0, fade.intro);
+		rect(center.x, center.y, aWindowWidth, windowHeight);
+		fade.intro -= 2.5;
+	}
 }
 
 function menu() {
 
+}
+
+function debug() {
+	fill(255, 0, 0);
+	textSize(25);
+	text(scaleResolution, mouseX + 40, mouseY + 5)
+	text(translateCenter.y, mouseX + 40, mouseY + 35)
 }
 
 function update() {
