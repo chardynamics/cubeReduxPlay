@@ -1,6 +1,6 @@
 //new Q5();
 
-var stage = 1;
+var stage = 2;
 var window = {
 	currentWidth: 1366,
 	beforeResWidth: 0,
@@ -63,6 +63,58 @@ function windowResized() {
 	resizeCanvas(aWindowWidth, windowHeight);
 }
 
+/*
+f = false background
+j = jump pad
+l = lava
+1 = first teleport
+2 = second teleport
+w = done
+*/
+var levels = [
+    [
+    "-                    -",
+    "-                    -",
+    "-                    -",
+    "-           1     w  -",
+    "--  2       -        -",
+    "-   -                -",
+    "-                    -",
+    "-                    -",
+    "-                    -",
+    "-    w     w     w  j-",
+    "- --eeeeeeeeeeeeeee---",
+    "- --------------------",
+    "-                    -",
+    "-                    -",
+    "-j                   -",
+    "---lwwwlwwwlwwwlwww- -",
+    "-------------------- -",
+    "-                    -",
+    "-p                  j-",
+    "----------------------"],
+    [
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "----------------------"],
+];
 function setup() {
 	createCanvas(windowWidth, windowHeight);
 	var canvas = document.querySelector("canvas");
@@ -77,15 +129,116 @@ function setup() {
     colorMode(RGB, 255, SRGB);
 	noStroke();
 
-    /*
-	world.gravity.y = 10;
-	cube = new Sprite(100, 100);
+    world.gravity.y = 100;
+    allSprites.autoDraw = false;
+    allSprites.autoUpdate = false;
+    world.autoStep = false;
+    spriteInit();
+}
+
+var floorTiles, waterTiles, enemiesTiles, lavaTiles, teleport1Tiles, teleport2Tiles, trampolineTiles, startTiles, winTiles;
+var gorundSensor;
+function spriteInit() {
+    floorTiles = new Group();
+    floorTiles.color = 'black';
+	floorTiles.w = 50;
+	floorTiles.h = 50;
+    floorTiles.drag = 0;
+	floorTiles.tile = '-';
+    floorTiles.collider = "static";
+
+    waterTiles = new Group();
+    waterTiles.color = color(0, pulse.var, 255, 180);
+	waterTiles.w = 50;
+	waterTiles.h = 50;
+    waterTiles.drag = 1;
+	waterTiles.tile = 'w';
+    waterTiles.collider = "static";
+
+    enemiesTiles = new Group();
+	enemiesTiles.w = 50;
+	enemiesTiles.h = 50;
+    enemiesTiles.drag = 1;
+	enemiesTiles.tile = 'e';
+    enemiesTiles.collider = "static";
+    enemiesTiles.color = color(0, 0, 0, 0);
+
+    lavaTiles = new Group();
+	lavaTiles.w = 50;
+	lavaTiles.h = 50;
+    lavaTiles.drag = 1;
+	lavaTiles.tile = 'l';
+    lavaTiles.collider = "static";
+    lavaTiles.color = 'orange';
+
+    teleport1Tiles = new Group();
+	teleport1Tiles.w = 50;
+	teleport1Tiles.h = 50;
+    teleport1Tiles.drag = 1;
+	teleport1Tiles.tile = '1';
+    teleport1Tiles.collider = "static";
+    teleport1Tiles.color = 'yellow';
+
+    teleport2Tiles = new Group();
+	teleport2Tiles.w = 50;
+	teleport2Tiles.h = 50;
+    teleport2Tiles.drag = 1;
+	teleport2Tiles.tile = '2';
+    teleport2Tiles.collider = "static";
+    teleport2Tiles.color = 'yellow';
+
+    trampolineTiles = new Group();
+	trampolineTiles.w = 50;
+	trampolineTiles.h = 50;
+    trampolineTiles.layer = 1;
+    trampolineTiles.drag = 1;
+	trampolineTiles.tile = 'j';
+    trampolineTiles.collider = "static";
+    trampolineTiles.color = 'yellow';
+
+    startTiles = new Group();
+	startTiles.w = 50;
+	startTiles.h = 50;
+    startTiles.drag = 1;
+	startTiles.tile = 'p';
+    startTiles.collider = "static";
+    startTiles.color = color(0, 0, 0, 0);
+
+    winTiles = new Group();
+	winTiles.w = 50;
+	winTiles.h = 50;
+    winTiles.drag = 2;
+	winTiles.tile = 'f';
+
+    cube = new Sprite(center.x - (levels[0][0].length * floorTiles.w)/2 + 50, center.y + (levels[0][levels[0].length-1].length * floorTiles.h)/2 - 200);
+    cube.w = 45;
+    cube.h = 45;
+    cube.layer = 100;
+    cube.rotationLock = true;
+    cube.friction = 1;
+    cube.drag = 1;
 	cube.draw = () => {
-		push();
-		rect(0, 0, 75, 75, 15);
-		pop();
+		rect(0, 0, cube.w, cube.h, 15);
 	}
-    */
+
+    cube.overlaps(waterTiles);
+    cube.overlaps(trampolineTiles);
+    cube.overlaps(startTiles);
+
+    //Jump collision detector implemented from
+    //https://openprocessing.org/sketch/1869796
+    groundSensor = new Sprite(cube.x, cube.y + 22.5, 40, 45, 'n');
+	groundSensor.visible = false;
+	//groundSensor.mass = 0.01;
+
+    let j = new GlueJoint(cube, groundSensor);
+	j.visible = false;
+
+    tutorialGroup = new Tiles(
+        levels[0],
+        center.x - (levels[0][0].length * floorTiles.w)/2, center.y - (levels[0][levels[0].length-1].length * floorTiles.h)/2,
+        floorTiles.w, floorTiles.h,
+    );
 }
 
 function pulseMath() {
@@ -93,118 +246,6 @@ function pulseMath() {
 	if(pulse.var<125){pulse.rate = -1;}
 	if(pulse.var>225){pulse.rate = 1;}
 }
-
-/*
-function intro() {
-	//clear();
-    pulseMath();
-	introVar.cubeRotate += 5;
-	
-	if (introVar.tankY > (210 * chromebookToCurrentScale)) {
-		introVar.tankY -= 1;
-	}
-	if ((introVar.tankY < (210 * chromebookToCurrentScale)) && (introVar.tankRotate < 25)) {
-		introVar.tankRotate += 1;
-		introVar.turretRotate = introVar.tankRotate;
-	}
-	if (introVar.tankRotate == 25 && introVar.turretRotate < 90) {
-		introVar.turretRotate += 1;
-	}
-	if (introVar.turretRotate == 90) {
-		if (introVar.bulletX <= 2000) {
-			introVar.bulletX += 8;
-		}
-		if ((introVar.bulletX >= 497)) {
-			introVar.bulletTransparency = 255;
-			introVar.soundTransparency = 50;
-		}
-	}
-	if ((introVar.bulletX >= 500)) {
-		introVar.textCover += 8;
-	}
-	if ((introVar.bulletX >= 1525) && (fade.out < 255)) {
-		fade.out += 2.5;
-	}
-	
-	background(0, 0, 0);
-	push();
-    translate(-400 * window.chromebookToCurrentScale, 2 * window.chromebookToCurrentScale)
-	fill(255, 255, 255);
-	textSize(800 * window.chromebookToCurrentScale); //I'm just using this as a general scale/ratio factor, although it only works with appropriate ratios
-	text("DP", 695 * window.chromebookToCurrentScale, 650 * window.chromebookToCurrentScale);
-	textSize(75);
-	text("roductions", 1470 * window.chromebookToCurrentScale, 650 * window.chromebookToCurrentScale);
-    pop();
-	resetMatrix();
-
-	push();
-	rect(0, 0, 0, 0);
-	translate(175 * window.chromebookToCurrentScale, 825 * window.chromebookToCurrentScale);
-	rotate(introVar.cubeRotate);
-	fill(-pulse.var, pulse.var, pulse.var + 100);
-	rect(0, 0, 150 * window.chromebookToCurrentScale, 150 * window.chromebookToCurrentScale, 15 * window.chromebookToCurrentScale);
-	pop();
-	resetMatrix();
-
-	push();
-	textSize(100 * window.chromebookToCurrentScale);
-	textAlign(CENTER, MIDDLE);
-	fill(255, 255, 255);
-	text("X", 175 * window.chromebookToCurrentScale, 825 * window.chromebookToCurrentScale);
-	pop();
-	resetMatrix();
-
-	push();
-	textSize(125 * window.chromebookToCurrentScale);
-	fill(255, 255, 255);
-	//text("...and more", 900 * window.chromebookToCurrentScale, 850 * window.chromebookToCurrentScale);
-	text("...and more", 1000 * window.chromebookToCurrentScale, 900 * window.chromebookToCurrentScale);
-	rectMode(CORNER);
-	fill(0);
-	//rect(1445, 670, bullet.textCover, 122);
-	rect(585 * window.chromebookToCurrentScale, 785 * window.chromebookToCurrentScale, introVar.textCover * window.chromebookToCurrentScale, 122 * window.chromebookToCurrentScale);
-	resetMatrix();
-	pop();
-	
-	push();
-	translate(introVar.bulletX, 775);
-	fill(100, 100, 100, introVar.soundTransparency);
-	triangle(-7.5, 45, 40, 17.5, -7.5, -9);
-	fill(158, 60, 14, introVar.bulletTransparency);
-	triangle(2, 27.5, 45, 17.5, 2, 10);
-	resetMatrix();
-	pop();
-
-	rectMode(CENTER);
-	push();
-	scale(4);
-	translate(110, introVar.tankY);
-	//fill(255, 0, 0);
-	rect(-12,0,5,35,5);
-	rect(12,0,5,35,5);
-	//fill(0, 120, 0);
-	rect(0,0,20,40,5);
-	rotate(introVar.turretRotate);
-	//fill(0, 100, 0);
-	rect(0,0,15,15,5);
-	rect(0,-20,5,25,0);
-	resetMatrix();
-	pop();
-	
-	if (fade.intro > 0) {
-		fill(0, 0, 0, fade.intro);
-		rect(window.currentWidth/2, windowHeight/2, window.currentWidth, windowHeight);
-		fade.intro -= 2.5;
-	}
-
-	fill(0, 0, 0, fade.out);
-	rect(window.currentWidth/2, windowHeight/2, window.currentWidth, windowHeight);
-	
-	if (fade.out >= 255) {
-		fade.intro = 255;
-		stage = 2;
-	}
-} */
 
 function intro() {
 	introVar.cubeRotate += 5;
@@ -313,24 +354,78 @@ function fadeOut() {
 }
 
 function menu() {
+    background(255);
+    if (groundSensor.overlapping(floorTiles) || groundSensor.overlapping(waterTiles) || groundSensor.overlapping(trampolineTiles) || groundSensor.overlapping(enemiesTiles) || groundSensor.overlapping(teleport1Tiles) || groundSensor.overlapping(teleport2Tiles) || groundSensor.overlapping(startTiles)) {
+        if (kb.pressing("w")) { 
+            cube.vel.y = -20;
+            /*
+            cube.bearing = -90;
+            cube.applyForce(1000);
+            */
+        }
+    }
 
+    if (cube.collides(lavaTiles)) {
+        cube.x = center.x - (levels[0][0].length * floorTiles.w)/2 + 50;
+        cube.y = center.y + (levels[0][levels[0].length-1].length * floorTiles.h)/2 - 200;
+    }
+    if (kb.pressing("a")) {
+        cube.vel.x = -10;
+        /*
+        cube.bearing = 180;
+		cube.applyForce(132.5);
+        */
+    }
+    if (kb.pressing("d")) {
+        cube.vel.x = 10;
+        /*
+        cube.bearing = 0;
+		cube.applyForce(132.5);
+        */
+    }
+
+    if (groundSensor.overlapping(waterTiles)) {
+        cube.drag = 40;
+    } else {
+        cube.drag = 0;
+    }
+
+    if (cube.overlapping(trampolineTiles)) {
+        cube.vel.y = -25;
+    }
+    allSprites.update();
+    allSprites.draw();
+    world.step();
+}
+
+function tutorial() {
+    background(255);
+    allSprites.update();
+    allSprites.draw();
+    world.step();
 }
 
 function debug() {
 	fill(255, 0, 0);
 	textSize(25);
-	text(scaleResolution, mouseX + 40, mouseY + 5)
+	text(getFPS(), mouseX + 40, mouseY + 5)
 	text(translateCenter.y, mouseX + 40, mouseY + 35)
 }
 
 function update() {
-	clear();
+    pulseMath();
+	//clear();
 	if (stage == 1) {
     	intro();
 	} else if (stage == 2) {
-		//menu();
+		menu();
 	}
     debug();
+}
+
+function drawFrame() {
+	camera.x = cube.x;
+	camera.y = cube.y;
 }
 
 window.addEventListener('resize', function() {
