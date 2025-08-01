@@ -129,7 +129,7 @@ function setup() {
     colorMode(RGB, 255, SRGB);
 	noStroke();
 
-    world.gravity.y = 25;
+    world.gravity.y = 100;
     allSprites.autoDraw = false;
     allSprites.autoUpdate = false;
     world.autoStep = false;
@@ -215,7 +215,7 @@ function spriteInit() {
     cube.h = 45;
     cube.layer = 100;
     cube.rotationLock = true;
-    cube.friction = 0.05;
+    cube.friction = 1;
     cube.drag = 1;
 	cube.draw = () => {
 		rect(0, 0, cube.w, cube.h, 15);
@@ -387,7 +387,7 @@ function menu() {
     if (groundSensor.overlapping(waterTiles)) {
         cube.drag = 40;
     } else {
-        cube.drag = 0.01;
+        cube.drag = 0;
     }
 
     if (cube.overlapping(trampolineTiles)) {
