@@ -2,7 +2,7 @@
 <br />
 <div align="center">
   <a href="https://chardynamics.github.io/cubeReduxPlay">
-    <img src="https://cdn.hackclub.com/019d0b8e-9d30-72db-9724-2e441d35d903/captura_de_pantalla_2026-03-20_a_la_s__10.02.56___a.m..png" alt="Logo" width="538" height="297">
+    <img src="https://cdn.hackclub.com/019d0b8e-9d30-72db-9724-2e441d35d903/captura_de_pantalla_2026-03-20_a_la_s__10.02.56___a.m..png" alt="Logo" width="50%" height="50%">
   </a>
 
 <h3 align="center">cubeReduxPlay</h3>
