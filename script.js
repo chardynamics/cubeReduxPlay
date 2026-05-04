@@ -87,6 +87,27 @@ var levels = [
     "- --------------------",
     "-                    -",
     "-                    -",
+    "-                    w-",
+    "-                   --",
+    "-                   --",
+    "-                   --",
+    "-                   --",
+    "----------------------"],
+    [
+    "-                    -",
+    "-                    -",
+    "-                    -",
+    "-           1     w  -",
+    "--  2       -        -",
+    "-   -                -",
+    "-                    -",
+    "-                    -",
+    "-                    -",
+    "-    w     w     w  j-",
+    "- --eeeeeeeeeeeeeee---",
+    "- --------------------",
+    "-                    -",
+    "-                    -",
     "-j                   -",
     "---lwwwlwwwlwwwlwww- -",
     "-------------------- -",
@@ -129,7 +150,7 @@ function setup() {
     colorMode(RGB, 255, SRGB);
 	noStroke();
 
-    world.gravity.y = 100;
+    world.gravity.y = 75;
     allSprites.autoDraw = false;
     allSprites.autoUpdate = false;
     world.autoStep = false;
@@ -215,8 +236,6 @@ function spriteInit() {
     cube.h = 45;
     cube.layer = 100;
     cube.rotationLock = true;
-    cube.friction = 1;
-    cube.drag = 1;
 	cube.draw = () => {
 		rect(0, 0, cube.w, cube.h, 15);
 	}
@@ -357,11 +376,8 @@ function menu() {
     background(255);
     if (groundSensor.overlapping(floorTiles) || groundSensor.overlapping(waterTiles) || groundSensor.overlapping(trampolineTiles) || groundSensor.overlapping(enemiesTiles) || groundSensor.overlapping(teleport1Tiles) || groundSensor.overlapping(teleport2Tiles) || groundSensor.overlapping(startTiles)) {
         if (kb.pressing("w")) { 
-            cube.vel.y = -20;
-            /*
             cube.bearing = -90;
-            cube.applyForce(1000);
-            */
+            cube.applyForce(800);
         }
     }
 
@@ -370,18 +386,12 @@ function menu() {
         cube.y = center.y + (levels[0][levels[0].length-1].length * floorTiles.h)/2 - 200;
     }
     if (kb.pressing("a")) {
-        cube.vel.x = -10;
-        /*
         cube.bearing = 180;
-		cube.applyForce(132.5);
-        */
+		cube.applyForce(100);
     }
     if (kb.pressing("d")) {
-        cube.vel.x = 10;
-        /*
         cube.bearing = 0;
-		cube.applyForce(132.5);
-        */
+		cube.applyForce(100);
     }
 
     if (groundSensor.overlapping(waterTiles)) {
@@ -409,7 +419,7 @@ function debug() {
 	fill(255, 0, 0);
 	textSize(25);
 	text(getFPS(), mouseX + 40, mouseY + 5)
-	text(translateCenter.y, mouseX + 40, mouseY + 35)
+	text(kb.pressing("w"), mouseX + 40, mouseY + 35)
 }
 
 function update() {
